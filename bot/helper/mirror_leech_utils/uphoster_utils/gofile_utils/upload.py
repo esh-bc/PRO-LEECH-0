@@ -109,6 +109,19 @@ class GoFileUpload:
         )
         raise Exception(f"GoFile Error: {error_msg}")
 
+    @staticmethod
+    def _folder_id(content_data):
+        if not isinstance(content_data, dict):
+            raise Exception(
+                "GoFile API returned an unexpected response (no folder data)"
+            )
+        fid = content_data.get("id") or content_data.get("folderId")
+        if not fid:
+            raise Exception(
+                f"GoFile API response missing folder id: {content_data!r}"
+            )
+        return fid
+
     async def __getServer(self):
         async with ClientSession() as session:
             async with session.get(f"{self.api_url}servers") as resp:
@@ -275,11 +288,12 @@ class GoFileUpload:
                 folder_data = await self.create_folder(
                     root_folder_id, ospath.basename(input_directory)
                 )
+                folder_id_value = self._folder_id(folder_data)
                 await self.__setOptions(
-                    contentId=folder_data["folderId"], option="public", value="true"
+                    contentId=folder_id_value, option="public", value="true"
                 )
-                parent_folder_id = folder_data["folderId"]
-                main_folder_code = folder_data["code"]
+                parent_folder_id = folder_id_value
+                main_folder_code = folder_data.get("code") or folder_id_value
         else:
             main_folder_code = None
 
@@ -299,13 +313,14 @@ class GoFileUpload:
                 curr_folder_data = await self.create_folder(
                     current_folder_id, folder_name
                 )
+                curr_folder_id_value = self._folder_id(curr_folder_data)
                 await self.__setOptions(
-                    contentId=curr_folder_data["folderId"],
+                    contentId=curr_folder_id_value,
                     option="public",
                     value="true",
                 )
-                folder_ids[rel_path] = curr_folder_data["folderId"]
-                current_folder_id = curr_folder_data["folderId"]
+                folder_ids[rel_path] = curr_folder_id_value
+                current_folder_id = curr_folder_id_value
                 self.total_folders += 1
 
             for file in files:

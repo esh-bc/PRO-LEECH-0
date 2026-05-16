@@ -1,6 +1,6 @@
 # This file is a part of NEO-WZML (github.com/irisXDR/NEO-WZML)
 
-from pyrogram.filters import regex, user
+from pyrogram.filters import regex
 from pyrogram.handlers import CallbackQueryHandler
 
 from bot import user_data
@@ -65,5 +65,5 @@ async def save_message(_, query):
 
 save_handler = CallbackQueryHandler(
     save_message,
-    filters=regex("^save") & user
+    filters=regex("^save"),
 )

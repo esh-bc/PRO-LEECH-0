@@ -698,18 +698,18 @@ class TaskListener(TaskConfig):
                             buttons.url_button("🌐 View Link", share_urls)
 
                 if Config.SAVE_MSG:
+                    save_target = "pm"
                     if self.user_dict.get("SAVE_MODE", False) and self.user_dict.get("LDUMP"):
-                        ldumps = self.user_dict["LDUMP"]
-                        if ldumps:
-                            buttons.data_button("💾 Save", f"save {list(ldumps.values())[0]}")
-                    else:
-                        buttons.data_button("💾 Save", "save pm")
+                        ldumps = self.user_dict.get("LDUMP") or {}
+                        for value in ldumps.values():
+                            candidate = f"save {value}".encode("utf-8")
+                            if len(candidate) <= 64:
+                                save_target = value
+                                break
+                    buttons.data_button("💾 Save", f"save {save_target}")
 
                 if Config.SOURCE_LINK and self.source_url:
-                    source_link = self.source_url
-                    if len(source_link) > 64:
-                        source_link = source_link[:64] + "..."
-                    buttons.data_button("🔗 Source", f"source {source_link}")
+                    buttons.url_button("🔗 Source", self.source_url)
 
                 if Config.SHOW_MEDIAINFO and mime_type and mime_type != 0:
                     if mime_type.startswith(("video", "audio")):

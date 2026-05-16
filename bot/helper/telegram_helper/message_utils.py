@@ -18,6 +18,8 @@ from pyrogram.errors import (
     EntityBoundsInvalid,
     PeerIdInvalid,
     ButtonUrlInvalid,
+    ButtonDataInvalid,
+    MessageDeleteForbidden,
 )
 
 try:
@@ -123,8 +125,8 @@ async def send_message(message, text, buttons=None, block=True, photo=None, _rec
             return str(f)
         await sleep(f.value * 1.2)
         return await send_message(message, text, buttons, _recursion_depth=_recursion_depth + 1)
-    except (ReplyMarkupInvalid, ButtonUrlInvalid) as rmi:
-        LOGGER.warning(str(rmi))
+    except (ReplyMarkupInvalid, ButtonUrlInvalid, ButtonDataInvalid) as rmi:
+        LOGGER.warning(f"Invalid reply markup, resending without buttons: {rmi}")
         if _recursion_depth >= 3:
             LOGGER.error("ReplyMarkupInvalid: Maximum retry depth reached")
             return
@@ -146,8 +148,8 @@ async def edit_message(message, text, buttons=None, block=True, _recursion_depth
         )
     except (MessageNotModified, MessageEmpty):
         pass
-    except (ReplyMarkupInvalid, ButtonUrlInvalid) as rmi:
-        LOGGER.warning(str(rmi))
+    except (ReplyMarkupInvalid, ButtonUrlInvalid, ButtonDataInvalid) as rmi:
+        LOGGER.warning(f"Invalid reply markup on edit, retrying without buttons: {rmi}")
         if _recursion_depth >= 3:
             LOGGER.error("ReplyMarkupInvalid: Maximum retry depth reached")
             return
@@ -232,7 +234,9 @@ async def delete_message(*args):
         return
     results = await gather(*tasks, return_exceptions=True)
     for result in results:
-        if isinstance(result, Exception):
+        if isinstance(result, MessageDeleteForbidden):
+            LOGGER.debug(f"Skipped delete (forbidden by Telegram): {result}")
+        elif isinstance(result, Exception):
             LOGGER.error(result)
 
 

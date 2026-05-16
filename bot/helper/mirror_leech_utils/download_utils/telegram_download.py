@@ -35,8 +35,16 @@ class TelegramDownloadHelper:
         self._start_time = 1
         self._listener = listener
         self._id = ""
+        self._gid = ""
         self.session = ""
         self._hyper_dl = len(TgClient.helper_bots) != 0 and Config.LEECH_DUMP_CHAT
+
+    async def _release_global_gid(self):
+        if not self._id:
+            return
+        async with global_lock:
+            if GLOBAL_GID.get(self._id) == self._gid:
+                GLOBAL_GID.pop(self._id, None)
 
     @property
     def speed(self):
@@ -50,6 +58,7 @@ class TelegramDownloadHelper:
         async with global_lock:
             GLOBAL_GID[file_id] = gid
         self._id = file_id
+        self._gid = gid
         async with task_dict_lock:
             task_dict[self._listener.mid] = TelegramStatus(
                 self._listener, self, gid, "dl", self._hyper_dl
@@ -77,15 +86,12 @@ class TelegramDownloadHelper:
         self._processed_bytes = current
 
     async def _on_download_error(self, error):
-        async with global_lock:
-            if self._id in GLOBAL_GID:
-                GLOBAL_GID.pop(self._id)
+        await self._release_global_gid()
         await self._listener.on_download_error(error)
 
     async def _on_download_complete(self):
         await self._listener.on_download_complete()
-        async with global_lock:
-            GLOBAL_GID.pop(self._id)
+        await self._release_global_gid()
         return
 
     async def _download(self, message, path):
@@ -114,7 +120,13 @@ class TelegramDownloadHelper:
             await self._download(message, path)
             return
         except Exception as e:
-            LOGGER.error(str(e), exc_info=True)
+            if self._listener.is_cancelled:
+                LOGGER.info(
+                    f"Telegram download stopped on cancel "
+                    f"({self._listener.name}): {e}"
+                )
+            else:
+                LOGGER.error(str(e), exc_info=True)
             await self._on_download_error(str(e))
             return
         if download is not None:
@@ -178,9 +190,7 @@ class TelegramDownloadHelper:
                                 chat_id=message.chat.id, message_ids=message.id
                             )
                     if self._listener.is_cancelled:
-                        async with global_lock:
-                            if self._id in GLOBAL_GID:
-                                GLOBAL_GID.pop(self._id)
+                        await self._release_global_gid()
                         return
                 self._start_time = time()
                 await self._on_download_start(media.file_unique_id, gid, add_to_queue)
