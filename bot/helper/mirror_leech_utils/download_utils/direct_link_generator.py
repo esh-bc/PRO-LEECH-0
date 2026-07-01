@@ -317,7 +317,7 @@ def direct_link_generator(link):
         ]
     ):
         raise DirectDownloadLinkException(f"ERROR: R.I.P {domain}")
-        elif "epdexx.com" in domain:
+    elif "epdexx.com" in domain:
         try:
             from curl_cffi import requests as cffi_requests
             session = cffi_requests.Session(impersonate="chrome110")
