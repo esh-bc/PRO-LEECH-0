@@ -5,7 +5,7 @@
 # UPSTREAM_REPO, UPSTREAM_BRANCH, AUTO_UPDATE and UPDATE_PKGS may also be set via env vars.
 
 # REQUIRED
-BOT_TOKEN = ""
+BOT_TOKEN = "8814566386:AAG-4b8LwhWzzlqBm_0zuxfvPL1I4wVRKYA"
 OWNER_ID = 0
 TELEGRAM_API = 0
 TELEGRAM_HASH = ""
@@ -26,8 +26,8 @@ FORCE_SUB_IDS = ""
 LOGIN_PASS = ""
 
 # Status & defaults
-STATUS_LIMIT = 10
-STATUS_UPDATE_INTERVAL = 15
+STATUS_LIMIT = 5
+STATUS_UPDATE_INTERVAL = 10
 DEFAULT_UPLOAD = "rc"  # "rc" | "gd" | "ddl"
 INCOMPLETE_TASK_NOTIFIER = False
 EXCLUDED_EXTENSIONS = ""
@@ -109,8 +109,8 @@ LINKS_LOG_ID = ""
 MIRROR_LOG_ID = ""
 
 # Telegraph
-AUTHOR_NAME = ""
-AUTHOR_URL = ""
+AUTHOR_NAME = "ESH 0_o"
+AUTHOR_URL = "t.me/iam_esh"
 
 # Hyper TG (helper bot tokens, comma-separated)
 HELPER_TOKENS = ""
@@ -127,7 +127,7 @@ JD_MODE = False
 
 # Google Drive
 GDRIVE_ID = ""
-GD_DESP = "Uploaded with NEO-WZML"
+GD_DESP = "Uploaded with PRO-LEECH 0_-"
 IS_TEAM_DRIVE = False
 USER_TD_MODE = False
 USER_TD_SA = ""
